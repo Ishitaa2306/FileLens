@@ -1,0 +1,37 @@
+R_DEF: Internal format may change without notice
+local
+color background
+color on_primary
+color on_surface
+color primary
+color primary_variant
+color secondary
+color surface
+drawable ic_launcher_background
+drawable ic_launcher_foreground
+mipmap ic_launcher
+mipmap ic_launcher_round
+string app_full_name
+string app_name
+string browse_folders
+string create_folder
+string create_subfolder
+string file_review_title
+string home_title
+string import_another
+string import_file
+string no_recent_files
+string recent_imports
+string save_file
+string save_success
+string select_destination
+string select_storage_folder
+string storage_configured
+string storage_explanation
+string storage_not_configured
+string view_in_browser
+string welcome_headline
+string welcome_subtitle
+style Theme.IntelligentFileOrganizer
+xml backup_rules
+xml data_extraction_rules
