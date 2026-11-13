@@ -21,7 +21,8 @@ object AppViewModelProvider {
             )
         }
         initializer {
-            FileReviewViewModel()
+            val app = fileOrganizerApp()
+            FileReviewViewModel(app.container.pdfPreviewGenerator)
         }
         initializer {
             val app = fileOrganizerApp()
@@ -34,7 +35,8 @@ object AppViewModelProvider {
             val app = fileOrganizerApp()
             FileBrowserViewModel(
                 folderRepository = app.container.folderRepository,
-                fileRepository = app.container.fileRepository
+                fileRepository = app.container.fileRepository,
+                storageRepository = app.container.storageRepository
             )
         }
     }

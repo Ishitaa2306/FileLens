@@ -65,7 +65,8 @@ fun FileReviewScreen(
                     mimeType = metadata.mimeType,
                     extension = metadata.extension,
                     sizeBytes = metadata.sizeBytes,
-                    previewUri = metadata.uri
+                    previewUri = metadata.uri,
+                    pdfThumbnailBitmap = uiState.pdfThumbnail
                 )
 
                 // Editable Filename Field

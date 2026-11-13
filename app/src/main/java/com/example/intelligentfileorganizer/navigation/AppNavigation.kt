@@ -152,6 +152,9 @@ fun AppNavigation(
                 viewModel = fileBrowserViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+                onNavigateToSetup = {
+                    navController.navigate(Screen.Welcome.route)
                 }
             )
         }

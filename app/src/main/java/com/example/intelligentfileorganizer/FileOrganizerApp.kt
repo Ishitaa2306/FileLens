@@ -7,6 +7,7 @@ import com.example.intelligentfileorganizer.data.repository.FolderRepository
 import com.example.intelligentfileorganizer.data.repository.StorageRepository
 import com.example.intelligentfileorganizer.storage.FileMetadataReader
 import com.example.intelligentfileorganizer.storage.IncomingFileHandler
+import com.example.intelligentfileorganizer.storage.PdfPreviewGenerator
 import com.example.intelligentfileorganizer.storage.SafStorageManager
 
 class AppContainer(private val application: Application) {
@@ -20,6 +21,10 @@ class AppContainer(private val application: Application) {
 
     val fileMetadataReader: FileMetadataReader by lazy {
         FileMetadataReader(application)
+    }
+
+    val pdfPreviewGenerator: PdfPreviewGenerator by lazy {
+        PdfPreviewGenerator(application)
     }
 
     val incomingFileHandler: IncomingFileHandler by lazy {

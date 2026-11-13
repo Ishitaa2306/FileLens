@@ -18,12 +18,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -31,6 +35,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -53,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.intelligentfileorganizer.domain.model.FileItem
 import com.example.intelligentfileorganizer.ui.components.AppTopBar
+import com.example.intelligentfileorganizer.ui.components.FileDetailDialog
 import com.example.intelligentfileorganizer.ui.components.FolderItemView
 import com.example.intelligentfileorganizer.ui.components.LoadingIndicator
 import com.example.intelligentfileorganizer.util.FileNameUtils
@@ -62,7 +68,8 @@ import com.example.intelligentfileorganizer.viewmodel.FileBrowserViewModel
 @Composable
 fun FileBrowserScreen(
     viewModel: FileBrowserViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToSetup: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -78,6 +85,23 @@ fun FileBrowserScreen(
         }
     }
 
+    // File Detail Modal Dialog
+    if (uiState.selectedFileForDetails != null) {
+        val selectedFile = uiState.selectedFileForDetails!!
+        FileDetailDialog(
+            file = selectedFile,
+            onDismiss = { viewModel.selectFileForDetails(null) },
+            onRenameClicked = {
+                renamingFile = selectedFile
+                newFileName = FileNameUtils.stripExtension(selectedFile.storedName)
+            },
+            onDeleteClicked = {
+                viewModel.deleteFile(selectedFile.id)
+            }
+        )
+    }
+
+    // Rename Dialog
     if (renamingFile != null) {
         AlertDialog(
             onDismissRequest = { renamingFile = null },
@@ -150,6 +174,50 @@ fun FileBrowserScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+                // Permission Revocation Warning
+                if (uiState.isPermissionLost) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.12f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(14.dp)
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Storage Permission Lost",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                    Text(
+                                        text = "Access to the selected folder has expired. Please reselect your storage folder.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                OutlinedButton(onClick = onNavigateToSetup) {
+                                    Text("Fix")
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Breadcrumbs Header
                 item {
                     Box(
@@ -170,17 +238,39 @@ fun FileBrowserScreen(
                     }
                 }
 
+                // Search Filter Bar
+                item {
+                    OutlinedTextField(
+                        value = uiState.searchQuery,
+                        onValueChange = { viewModel.onSearchQueryChanged(it) },
+                        placeholder = { Text("Search files & folders...") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Search, contentDescription = "Search")
+                        },
+                        trailingIcon = {
+                            if (uiState.searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Clear search")
+                                }
+                            }
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
                 // Subfolders Section
-                if (uiState.subfolders.isNotEmpty()) {
+                if (uiState.filteredSubfolders.isNotEmpty()) {
                     item {
                         Text(
-                            text = "Folders (${uiState.subfolders.size})",
+                            text = "Folders (${uiState.filteredSubfolders.size})",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                     }
 
-                    items(uiState.subfolders) { folder ->
+                    items(uiState.filteredSubfolders) { folder ->
                         FolderItemView(
                             folder = folder,
                             onClick = { viewModel.openFolder(folder) }
@@ -193,13 +283,13 @@ fun FileBrowserScreen(
                     item {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Files (${uiState.files.size})",
+                            text = "Files (${uiState.filteredFiles.size})",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                     }
 
-                    if (uiState.files.isEmpty()) {
+                    if (uiState.filteredFiles.isEmpty()) {
                         item {
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
@@ -209,7 +299,7 @@ fun FileBrowserScreen(
                                 )
                             ) {
                                 Text(
-                                    text = "No files inside this folder yet.",
+                                    text = if (uiState.searchQuery.isNotEmpty()) "No files match '${uiState.searchQuery}'" else "No files inside this folder yet.",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                                     textAlign = TextAlign.Center,
@@ -220,9 +310,10 @@ fun FileBrowserScreen(
                             }
                         }
                     } else {
-                        items(uiState.files) { file ->
+                        items(uiState.filteredFiles) { file ->
                             BrowserFileRow(
                                 file = file,
+                                onClick = { viewModel.selectFileForDetails(file) },
                                 onRename = {
                                     renamingFile = file
                                     newFileName = FileNameUtils.stripExtension(file.storedName)
@@ -240,13 +331,16 @@ fun FileBrowserScreen(
 @Composable
 fun BrowserFileRow(
     file: FileItem,
+    onClick: () -> Unit = {},
     onRename: () -> Unit,
     onDelete: () -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -305,6 +399,14 @@ fun BrowserFileRow(
                     onDismissRequest = { menuExpanded = false }
                 ) {
                     DropdownMenuItem(
+                        text = { Text("Details") },
+                        leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
+                        onClick = {
+                            menuExpanded = false
+                            onClick()
+                        }
+                    )
+                    DropdownMenuItem(
                         text = { Text("Rename") },
                         leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
                         onClick = {
@@ -325,4 +427,3 @@ fun BrowserFileRow(
         }
     }
 }
-

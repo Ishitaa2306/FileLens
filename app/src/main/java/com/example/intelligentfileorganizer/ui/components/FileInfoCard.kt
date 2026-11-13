@@ -1,6 +1,8 @@
 package com.example.intelligentfileorganizer.ui.components
 
+import android.graphics.Bitmap
 import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -27,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,6 +45,7 @@ fun FileInfoCard(
     extension: String,
     sizeBytes: Long,
     previewUri: Uri? = null,
+    pdfThumbnailBitmap: Bitmap? = null,
     folderPath: String? = null,
     modifier: Modifier = Modifier
 ) {
@@ -69,6 +73,25 @@ fun FileInfoCard(
                     AsyncImage(
                         model = previewUri,
                         contentDescription = "Image preview",
+                        modifier = Modifier.fillMaxWidth(),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+                Spacer(modifier = Modifier.height(14.dp))
+            } else if ((mimeType == MimeTypeUtils.MIME_PDF || extension.equals("pdf", true)) && pdfThumbnailBitmap != null) {
+                // PDF First-Page Offline Preview
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.background)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        bitmap = pdfThumbnailBitmap.asImageBitmap(),
+                        contentDescription = "PDF page preview",
                         modifier = Modifier.fillMaxWidth(),
                         contentScale = ContentScale.Fit
                     )
