@@ -78,3 +78,4 @@ The following features were intentionally excluded from Phase 1 per prompt speci
 - **Duplicate & blurry image detection**
 - **Retention period & automatic deletion schedules**
 - **Biometric lock & encrypted vault**
+

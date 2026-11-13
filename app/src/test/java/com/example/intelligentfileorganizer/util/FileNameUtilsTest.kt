@@ -64,3 +64,4 @@ class FileNameUtilsTest {
         assertEquals("10 MB", FileNameUtils.formatFileSize(10 * 1024 * 1024))
     }
 }
+

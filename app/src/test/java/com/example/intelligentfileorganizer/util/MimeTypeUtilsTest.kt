@@ -53,3 +53,4 @@ class MimeTypeUtilsTest {
         assertFalse(MimeTypeUtils.isImage(null))
     }
 }
+
