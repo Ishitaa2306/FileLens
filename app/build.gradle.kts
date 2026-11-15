@@ -71,6 +71,12 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.play.services)
+
+    // OCR & image metadata
+    implementation(libs.mlkit.text.recognition)
+    implementation(libs.pdfbox.android)
+    implementation(libs.androidx.exifinterface)
 
     // Coil (Image Preview)
     implementation(libs.coil.compose)

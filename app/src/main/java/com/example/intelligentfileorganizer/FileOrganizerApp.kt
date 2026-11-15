@@ -5,6 +5,8 @@ import com.example.intelligentfileorganizer.data.local.OrganizerDatabase
 import com.example.intelligentfileorganizer.data.repository.FileRepository
 import com.example.intelligentfileorganizer.data.repository.FolderRepository
 import com.example.intelligentfileorganizer.data.repository.StorageRepository
+import com.example.intelligentfileorganizer.domain.analyzer.DocumentAnalyzer
+import com.example.intelligentfileorganizer.domain.analyzer.OcrDocumentAnalyzer
 import com.example.intelligentfileorganizer.storage.FileMetadataReader
 import com.example.intelligentfileorganizer.storage.IncomingFileHandler
 import com.example.intelligentfileorganizer.storage.PdfPreviewGenerator
@@ -29,6 +31,18 @@ class AppContainer(private val application: Application) {
 
     val incomingFileHandler: IncomingFileHandler by lazy {
         IncomingFileHandler(application, fileMetadataReader)
+    }
+
+    private val documentAnalyzerDelegate = lazy<DocumentAnalyzer> {
+        OcrDocumentAnalyzer(application)
+    }
+
+    val documentAnalyzer: DocumentAnalyzer by documentAnalyzerDelegate
+
+    fun releaseDocumentAnalyzer() {
+        if (documentAnalyzerDelegate.isInitialized()) {
+            (documentAnalyzerDelegate.value as? OcrDocumentAnalyzer)?.close()
+        }
     }
 
     val storageRepository: StorageRepository by lazy {
@@ -63,6 +77,20 @@ class FileOrganizerApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        if (::container.isInitialized) {
+            container.releaseDocumentAnalyzer()
+        }
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= TRIM_MEMORY_UI_HIDDEN && ::container.isInitialized) {
+            container.releaseDocumentAnalyzer()
+        }
     }
 }
 

@@ -22,7 +22,10 @@ object AppViewModelProvider {
         }
         initializer {
             val app = fileOrganizerApp()
-            FileReviewViewModel(app.container.pdfPreviewGenerator)
+            FileReviewViewModel(
+                pdfPreviewGenerator = app.container.pdfPreviewGenerator,
+                documentAnalyzer = app.container.documentAnalyzer
+            )
         }
         initializer {
             val app = fileOrganizerApp()

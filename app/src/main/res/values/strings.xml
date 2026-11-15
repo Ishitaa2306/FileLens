@@ -20,5 +20,11 @@
     <string name="save_success">File Saved Successfully!</string>
     <string name="import_another">Import Another File</string>
     <string name="view_in_browser">View in Folder</string>
+    <string name="ocr_section_title">Extracted Text</string>
+    <string name="ocr_cancel">Cancel</string>
+    <string name="ocr_retry">Retry</string>
+    <string name="ocr_page_truncated_notice">Only the first %1$d pages were processed. Later pages were not included.</string>
+    <string name="ocr_character_truncated_notice">The character limit was reached. Some extracted text was omitted.</string>
+    <string name="ocr_truncated_fallback_notice">Extraction stopped before all content could be included.</string>
 </resources>
 

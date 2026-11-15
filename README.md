@@ -9,6 +9,7 @@ A privacy-first, offline Android application designed to receive, organize, and 
 This repository contains the complete implementation for **Phase 1 MVP** of the Intelligent Offline File Organizer.
 
 ### Implemented Capabilities:
+- **On-device OCR (Phase 2, Feature 1)**: Uses Google ML Kit bundled Latin text recognition to extract text from JPEG, PNG, and PDF images locally on the device. No network upload or cloud OCR is performed.
 - **First-Launch Storage Onboarding**: Guides the user to select their user-accessible `Documents` directory via SAF (`ACTION_OPEN_DOCUMENT_TREE`).
 - **Persisted Tree Permissions**: Persists directory permissions across device reboots and app restarts.
 - **Dedicated Root Workspace**: Automatically initializes an `Intelligent File Organizer` root directory inside the user's selected Documents folder.
@@ -50,6 +51,7 @@ This repository contains the complete implementation for **Phase 1 MVP** of the 
 | **Local Database** | Room 2.6.1 (with KSP) |
 | **Storage Engine** | Android Storage Access Framework (SAF) + `DocumentFile` |
 | **Image Loading** | Coil Compose 2.7.0 (Local content URI previews) |
+| **OCR Engine** | Google ML Kit bundled Latin text recognition (`com.google.mlkit:text-recognition:16.0.1`) |
 | **Minimum SDK** | API 26 (Android 8.0) |
 | **Target / Compile SDK** | API 35 (Android 15) |
 | **JDK Requirement** | Java 17 |
@@ -140,7 +142,14 @@ app/src/main/
 
 ---
 
-## 4. Setup, Build & Run in Android Studio
+## 4. OCR Privacy & Network Notes
+
+- OCR is performed entirely on-device using the Android app process; document text never leaves the device.
+- The bundled ML Kit Latin model used here (`com.google.mlkit:text-recognition:16.0.1`) is statically linked with the APK and does not require the app to request `INTERNET` permission.
+- This app does not persist extracted text in Room; OCR output is transient and only available while the current import is reviewed.
+- SAF-selected folders may still be backed by cloud-synced storage providers outside the app's control, so the saved document itself is user-controlled and not app-encrypted.
+
+## 5. Setup, Build & Run in Android Studio
 
 ### Prerequisites
 1. **Android Studio**: Android Studio Ladybug (2024.2.1) or Hedgehog / Iguana / Jellyfish / Koala.
@@ -156,7 +165,7 @@ app/src/main/
 
 ---
 
-## 5. End-to-End Verification Scenario
+## 6. End-to-End Verification Scenario
 
 To test the acceptance criteria:
 1. **Launch App**: Open the app. The Welcome screen appears.
